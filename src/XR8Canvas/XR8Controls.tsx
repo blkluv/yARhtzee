@@ -37,7 +37,12 @@ export const XR8Controls = ({
       ),
     ]);
 
-    xr8.run({ canvas: gl.domElement, ownRunLoop: true });
+    xr8.run({
+      canvas: gl.domElement,
+
+      // let 8th wall control the render loop
+      ownRunLoop: true,
+    });
 
     return () => {
       gl.autoClear = true;
@@ -60,11 +65,10 @@ export const XR8Controls = ({
     };
   }, [xr8]);
 
-  useFrame(({ gl }, dt) => {
-    if (xr8 && !xr8.isPaused() && (gl as any).xr8Started) {
-      xr8.runPreRender(dt);
-      xr8.runPostRender(dt);
-    }
+  // let 8th wall control the render loop
+  // ie: do nothing on react-three-fiber render loop
+  useFrame(() => {
+    // do nothing
   }, 1);
 
   return null;
@@ -90,7 +94,9 @@ const createCustomPipeline = (
       if (GLctx !== renderer.getContext())
         throw new Error("context do not match");
 
-      renderer.setSize(canvasWidth, canvasHeight);
+      // I don't know why, but this seems to break 8thwall viewport
+      // which is weird because it's mandatory in the examples: https://github.com/8thwall/web/blob/8093829ab70f17a82afc6743b9777daf4fc15266/examples/threejs/custom-pipeline-module/customThreejsPipelineModule.js#L25
+      // renderer.setSize(canvasWidth, canvasHeight);
 
       xr8.XrController.updateCameraProjectionMatrix({
         origin: camera.position,
@@ -104,7 +110,8 @@ const createCustomPipeline = (
     },
 
     onCanvasSizeChange: ({ canvasWidth, canvasHeight }) => {
-      renderer.setSize(canvasWidth, canvasHeight);
+      // same as above
+      // renderer.setSize(canvasWidth, canvasHeight);
     },
     onUpdate: ({ processCpuResult }) => {
       // update camera position

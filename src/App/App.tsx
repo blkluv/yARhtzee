@@ -20,7 +20,8 @@ import { useXR8 } from "../XR8Canvas/useXR8";
 import { Visualizer } from "react-touch-visualizer";
 import { xr8Hosted } from "../XR8Canvas/getXR8";
 
-const xr8ApiKey: string = ""; //process.env.XR8_API_KEY!;
+// @ts-ignore
+const xr8ApiKey: string | undefined = import.meta.env.VITE_XR8_API_KEY;
 const touchSupported = "ontouchend" in document;
 
 type Props = {
@@ -71,7 +72,7 @@ export const App = ({ onReady, onProgress, started }: Props) => {
 
   const xr8Supported = (xr8ApiKey || xr8Hosted) && touchSupported;
 
-  const xr8 = xr8Supported ? useXR8(xr8ApiKey) : null;
+  const xr8 = xr8Supported && xr8ApiKey ? useXR8(xr8ApiKey) : null;
 
   {
     const { active, progress, total } = useProgress();

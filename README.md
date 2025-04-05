@@ -38,6 +38,10 @@ Be sure to have your 8thwall api key as env `XR8_API_KEY` . Or use a .env file. 
 yarn dev
 ```
 
+## Tips
+
+- [wireless debugging](https://medium.com/android-news/wireless-debugging-through-adb-in-android-using-wifi-965f7edd163a)
+
 # Attribution
 
 - ["Dice"](https://skfb.ly/6RtsC) by tnRaro is licensed under [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/).
