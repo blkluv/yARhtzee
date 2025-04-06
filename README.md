@@ -12,9 +12,7 @@
 
 A pretty cool yahtzee game in augmented reality.
 
-[yAR-htzee](https://yAR-htzee-platane.surge.sh)
-
-> ⚠️ Unfortunately I no longer have a 8thwall plan. The AR features have been disabled.
+[yAR-htzee](https://platane.github.io/yAR-htzee)
 
 # Background
 
@@ -30,7 +28,7 @@ If the device does not support AR or 8thwall can't be loaded, the game runs with
 yarn
 ```
 
-Be sure to have your 8thwall api key as env `XR8_API_KEY` . Or use a .env file. Or embed the app inside 8thwall sandbox.
+Be sure to have your 8thwall api key as env `VITE_XR8_API_KEY` . Or use a .env file. Or embed the app inside 8thwall sandbox.
 
 # Usage
 
@@ -46,3 +44,4 @@ yarn dev
 
 - ["Dice"](https://skfb.ly/6RtsC) by tnRaro is licensed under [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/).
 - ["Lebombo"](https://hdrihaven.com/hdri/?c=indoor&h=lebombo) by Greg Zaal is licensed under [CC0](https://creativecommons.org/share-your-work/public-domain/cc0/)
+- Thanks [@dhaiduk](https://github.com/dhaiduk) for providing a 8thWall dev key for this demo !
