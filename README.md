@@ -18,23 +18,25 @@ A pretty cool yahtzee game in augmented reality.
 
 This game uses [8thwall](https://www.8thwall.com/products-web#world-tracking) SDK to achieve world tracking.
 
-The dice are renderer with three js using react-three-fiber and the physical world is simulated with cannon.
+The dice are rendered with [three.js](https://github.com/mrdoob/three.js) using [react-three-fiber](https://github.com/pmndrs/react-three-fiber) and the physical world is simulated with [cannon.js](https://github.com/schteppe/cannon.js).
 
-If the device does not support AR or 8thwall can't be loaded, the game runs without Augmented Reality features.
+If the device does not support AR or 8thwall can't be loaded, the game runs without Augmented Reality.
 
 # Install
 
-```
-yarn
-```
+```sh
+bun install
 
-Be sure to have your 8thwall api key as env `VITE_XR8_API_KEY` . Or use a .env file. Or embed the app inside 8thwall sandbox.
+# https://bun.sh/docs/installation
+```
 
 # Usage
 
+```sh
+bun dev
 ```
-yarn dev
-```
+
+Be sure to have your 8thwall api key as env `VITE_XR8_API_KEY` . Or use a .env file. Or embed the app inside 8thwall sandbox.
 
 ## Tips
 
