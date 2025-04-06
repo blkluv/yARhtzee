@@ -1,5 +1,6 @@
 import { getScore } from "../getScore";
-import { categories, Category, DiceRoll } from "../types";
+import { Category, DiceRoll } from "../types";
+import { it, expect } from "bun:test";
 
 (
   [
