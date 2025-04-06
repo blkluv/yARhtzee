@@ -5,7 +5,7 @@ import {
   nDice,
   ScoreSheet,
 } from "../game/types";
-import create from "zustand";
+import { create } from "zustand";
 
 const emptyScoreSheet = Object.fromEntries(
   categories.map((category) => [category, null])
