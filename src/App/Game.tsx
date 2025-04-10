@@ -14,11 +14,7 @@ import { SelectedDiceHint } from "./Scene/SelectedDiceHint";
 import { useDelay } from "./Ui/useDelay";
 import { Target } from "./Scene/Target";
 import { createGameWorld } from "../gameWorld/state";
-import {
-  Game as IGame,
-  isBlank,
-  nReroll,
-} from "../gameRules/game";
+import { type Game as IGame, isBlank, nReroll } from "../gameRules/game";
 
 export const Game_ = ({
   UiPortal,
@@ -109,7 +105,11 @@ export const Game_ = ({
         {scoresheetOpen && (
           <Overlay>
             <ScoreSheet
-              style={{ width: "calc( 100% - 40px )", maxWidth: "600px" }}
+              style={{
+                width: "calc( 100% - 40px )",
+                maxWidth: "600px",
+                pointerEvents: "auto",
+              }}
               scoreSheet={world.state.game.scoreSheet}
               onClose={() => setScoresheetOpen(false)}
               onSelectCategory={
@@ -138,6 +138,7 @@ export const Game_ = ({
               bottom: "10px",
               right: "60px",
               zIndex: 1,
+              pointerEvents: "auto",
             }}
             onClick={() => setScoresheetOpen(true)}
           >
@@ -197,12 +198,14 @@ const useEventListeners = ({
     domElement.addEventListener("pointermove", onMove);
     domElement.addEventListener("pointerup", onUp);
     document.addEventListener("mouseleave", onUp);
+    document.addEventListener("blur", onUp);
 
     return () => {
       domElement.removeEventListener("pointerdown", onDown);
       domElement.removeEventListener("pointermove", onMove);
       domElement.removeEventListener("pointerup", onUp);
       document.removeEventListener("mouseleave", onUp);
+      document.removeEventListener("blur", onUp);
     };
   }, [domElement]);
 };

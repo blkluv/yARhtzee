@@ -2,7 +2,7 @@ import * as React from "react";
 import * as THREE from "three";
 import { Environment, useProgress } from "@react-three/drei";
 import { GithubLogo } from "./Ui/GithubLogo";
-import { Canvas, createPortal, useFrame, useThree } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { XR8Controls } from "../XR8Canvas/XR8Controls";
 import { useXR8 } from "../XR8Canvas/useXR8";
 import { xr8Hosted } from "../XR8Canvas/getXR8";
@@ -12,6 +12,7 @@ import { Dice } from "./Scene/Dice";
 import { Visualizer } from "react-touch-visualizer";
 import tunnel from "tunnel-rat";
 import { Ground } from "./Scene/Ground";
+import { createPortal } from "react-dom";
 
 // @ts-ignore
 const xr8ApiKey: string | undefined = import.meta.env.VITE_XR8_API_KEY;
@@ -95,23 +96,28 @@ export const App = ({ onReady, onProgress, started }: Props) => {
         </ErrorBoundary>
       </Canvas>
 
-      <a href="https://github.com/platane/yAR-htzee" title="github">
-        <button
-          style={{
-            position: "absolute",
-            width: "40px",
-            height: "40px",
-            bottom: "10px",
-            right: "10px",
-            pointerEvents: "auto",
-            zIndex: 1,
-          }}
-        >
-          <GithubLogo />
-        </button>
-      </a>
+      {createPortal(
+        <>
+          <a href="https://github.com/platane/yAR-htzee" title="github">
+            <button
+              style={{
+                position: "absolute",
+                width: "40px",
+                height: "40px",
+                bottom: "10px",
+                right: "10px",
+                pointerEvents: "auto",
+                zIndex: 1,
+              }}
+            >
+              <GithubLogo />
+            </button>
+          </a>
 
-      {React.createElement(uiTunnel.Out)}
+          {React.createElement(uiTunnel.Out)}
+        </>,
+        document.getElementById("overlay")!
+      )}
     </>
   );
 };
