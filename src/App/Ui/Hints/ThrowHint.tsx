@@ -75,6 +75,8 @@ export const ThrowHint = () => {
           overflow: "hidden",
           zIndex: 2,
 
+          pointerEvents: "none",
+
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
