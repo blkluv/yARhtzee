@@ -13,7 +13,7 @@ export const XR8Controls = ({
   const [error, setError] = React.useState<Error>();
   if (error) throw error;
 
-  const { gl, scene, camera } = useThree();
+  const { gl, scene, camera, setFrameloop, advance } = useThree();
 
   // start / stop
   React.useLayoutEffect(() => {
@@ -35,6 +35,12 @@ export const XR8Controls = ({
         setError,
         onReady
       ),
+      {
+        name: "onUpdate-listener",
+        onUpdate({ fps }) {
+          advance(1 / fps);
+        },
+      },
     ]);
 
     xr8.run({
@@ -44,7 +50,10 @@ export const XR8Controls = ({
       ownRunLoop: true,
     });
 
+    setFrameloop("never");
+
     return () => {
+      setFrameloop("always");
       gl.autoClear = true;
       xr8.stop();
     };
