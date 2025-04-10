@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { stepSpring } from "../../game/spring";
+import { stepSpring } from "../../gameWorld/spring";
 
 type Props = {
   pulse?: boolean | number | string | null;

@@ -13,12 +13,10 @@ import { ScaleOnPulse } from "./Scene/ScaleOnPulse";
 import { SelectedDiceHint } from "./Scene/SelectedDiceHint";
 import { useDelay } from "./Ui/useDelay";
 import { Target } from "./Scene/Target";
-import { createGameWorld } from "../game/state";
+import { createGameWorld } from "../gameWorld/state";
 import {
   Game as IGame,
-  getStatus,
   isBlank,
-  isRolling,
   nReroll,
 } from "../gameRules/game";
 
@@ -117,9 +115,9 @@ export const Game_ = ({
               onSelectCategory={
                 world.state.game.roll.every(isDiceValue)
                   ? (c) => {
-                      world.selectCategoryForDiceRoll(c);
-                      setScoresheetOpen(false);
-                    }
+                    world.selectCategoryForDiceRoll(c);
+                    setScoresheetOpen(false);
+                  }
                   : undefined
               }
               rollCandidate={
