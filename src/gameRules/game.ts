@@ -29,9 +29,14 @@ export const isBlank = (d: DiceValue | "rolling" | "blank"): d is "blank" =>
 export const isRollReady = (roll: Game["roll"]) => roll.every(isDiceValue);
 
 export const setRoll = (game: Game, roll: (DiceValue | "rolling")[]): Game => {
-  if (!arrayEquals(game.roll, roll)) return { ...game, roll };
-  return game;
+  if (game.roll.some(isBlank)) return game;
+  if (game.roll.some((dice, i) => isDiceValue(dice) && isRolling(roll[i])))
+    return game;
+
+  if (arrayEquals(game.roll, roll)) return game;
+  return { ...game, roll };
 };
+
 export const togglePickedDice = (game: Game, diceIndex: number): Game => {
   // forbid to pick a dice without value
   if (!isDiceValue(game.roll[diceIndex])) return game;
@@ -68,12 +73,10 @@ export const selectCategoryForDiceRoll = (
 
   return {
     ...game,
-    pickedDice: Object.fromEntries(
-      Array.from({ length: nDice }, (_, i) => [i, true])
-    ),
+    pickedDice: Object.fromEntries(game.roll.map((_, i) => [i, true])),
     scoreSheet,
     remainingReRoll: nReroll,
-    roll: Array.from({ length: nDice }, () => "blank"),
+    roll: game.roll.map(() => "blank"),
   };
 };
 
@@ -98,7 +101,7 @@ export const startRolling = (game: Game): Game => {
   return { ...game, pickedDice: {}, roll };
 };
 
-export const createEmptyGame = (): Game => ({
+export const createEmptyGame = (nDice: number): Game => ({
   scoreSheet: createEmptyScoreSheet(),
   pickedDice: Object.fromEntries(
     Array.from({ length: nDice }, (_, i) => [i, true])

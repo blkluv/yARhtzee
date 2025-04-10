@@ -1,6 +1,10 @@
 import * as CANNON from "cannon-es";
 import { clamp } from "three/src/math/MathUtils";
-import { type Category, isScoreSheetFinished } from "../gameRules/types";
+import {
+  type Category,
+  isDiceValue,
+  isScoreSheetFinished,
+} from "../gameRules/types";
 import { stepSpring } from "./spring";
 import { getDiceUpFace, isBodySleeping, isDiceFlat } from "./getDiceUpFace";
 import { getCrumbledCubes } from "./getCrumbledCubes";
@@ -53,7 +57,7 @@ export const createGameWorld = () => {
   //
 
   const state = {
-    game: createRGame(),
+    game: createRGame(nDice),
     throw: { x: 0, v: 0, target: 0 },
     pull: { x: 1, v: 0, target: 1 },
     camera: new CANNON.Transform(),
@@ -66,23 +70,30 @@ export const createGameWorld = () => {
   };
 
   const crumbled = getCrumbledCubes({ n: nDice });
-  for (let i = nDice; i--; ) {
-    copyTransform(crumbled[i], state.dices[i].crumbled);
-    state.dices[i].crumbled.position.y += -2;
-    state.dices[i].crumbled.position.z += -3;
-
-    state.dices[i].thrown.position.set(
-      state.dices[i].crumbled.position.x * 1.6,
-      state.dices[i].crumbled.position.y * 1.1 + 0.6,
-      state.dices[i].crumbled.position.z - 4
-    );
-    state.dices[i].thrown.quaternion
+  const assignCrumbledPosition = () => {
+    const tr = new CANNON.Transform();
+    tr.quaternion
       .set(Math.random(), Math.random(), Math.random(), 1)
       .normalize();
-  }
+    for (let i = nDice; i--;) {
+      composeTransform(tr, crumbled[i], state.dices[i].crumbled);
+      state.dices[i].crumbled.position.y += -2;
+      state.dices[i].crumbled.position.z += -3;
+
+      state.dices[i].thrown.position.set(
+        state.dices[i].crumbled.position.x * 1.6,
+        state.dices[i].crumbled.position.y * 1.1 + 0.6,
+        state.dices[i].crumbled.position.z - 4
+      );
+      state.dices[i].thrown.quaternion
+        .set(Math.random(), Math.random(), Math.random(), 1)
+        .normalize();
+    }
+  };
+  assignCrumbledPosition();
 
   const throwDices = () => {
-    for (let i = nDice; i--; ) {
+    for (let i = nDice; i--;) {
       const body = state.dices[i].physical;
 
       if (!state.game.pickedDice[i]) {
@@ -120,8 +131,8 @@ export const createGameWorld = () => {
       body.applyImpulse(force, impulsePoint);
     }
 
-    // TODO: reset crumbled position
-    // or actually just rotate, because it's costly to recompute
+    // generate new crumbled position (kind of)
+    assignCrumbledPosition();
 
     state.pull.x = state.pull.v = state.pull.target = 0;
     state.throw.x = state.throw.v = state.throw.target = 0;
@@ -163,16 +174,21 @@ export const createGameWorld = () => {
 
   const step = (dt: number) => {
     if (!state.game.roll.some(isBlank)) {
-      world.step(PHYSIC_DT);
+      world.step(dt * 5);
 
       for (const o of state.dices) {
         if (!isBodySleeping(o.physical)) o.stepSinceImmobile = 0;
         else o.stepSinceImmobile++;
       }
 
-      const roll = state.dices.map(({ physical, stepSinceImmobile }) =>
-        stepSinceImmobile > 6 ? getDiceUpFace(physical.quaternion) : "rolling"
-      );
+      const roll = state.dices.map(({ physical, stepSinceImmobile }, i) => {
+        if (stepSinceImmobile < 6) {
+          if (isDiceValue(state.game.roll[i])) return state.game.roll[i];
+          return "rolling";
+        }
+
+        return getDiceUpFace(physical.quaternion);
+      });
 
       state.game = setRoll(state.game, roll);
     }

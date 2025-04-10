@@ -8,7 +8,7 @@ import {
 import { it, expect } from "bun:test";
 
 it("should play game", () => {
-  let game = createEmptyGame();
+  let game = createEmptyGame(5);
   expect(game.roll).toEqual(["blank", "blank", "blank", "blank", "blank"]);
 
   game = startRolling(game);
@@ -27,6 +27,6 @@ it("should play game", () => {
 });
 
 it("should guard against rolling if nothing is picked", () => {
-  const game = setRoll(createEmptyGame(), [1, 2, 3, 2, 4]);
+  const game = setRoll(createEmptyGame(5), [1, 2, 3, 2, 4]);
   expect(game).toBe(startRolling(game));
 });
