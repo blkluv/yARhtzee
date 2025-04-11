@@ -4,7 +4,7 @@ import * as THREE from "three";
 
 const diceUrl = "assets/dice.glb";
 
-useGLTF.preload(diceUrl);
+export const preload = () => useGLTF.preload(diceUrl);
 
 const scale = new THREE.Vector3(0.5, 0.5, 0.5);
 

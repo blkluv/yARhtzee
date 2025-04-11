@@ -58,7 +58,7 @@ export const createGameWorld = () => {
 
   const state = {
     game: createRGame(nDice),
-    throw: { x: 0, v: 0, target: 0 },
+    throw: { x: -1, v: 0, target: 0 },
     pull: { x: 1, v: 0, target: 1 },
     camera: new CANNON.Transform(),
     dices: bodies.map((body) => ({
@@ -75,7 +75,7 @@ export const createGameWorld = () => {
     tr.quaternion
       .set(Math.random(), Math.random(), Math.random(), 1)
       .normalize();
-    for (let i = nDice; i--;) {
+    for (let i = nDice; i--; ) {
       composeTransform(tr, crumbled[i], state.dices[i].crumbled);
       state.dices[i].crumbled.position.y += -2;
       state.dices[i].crumbled.position.z += -3;
@@ -93,7 +93,7 @@ export const createGameWorld = () => {
   assignCrumbledPosition();
 
   const throwDices = () => {
-    for (let i = nDice; i--;) {
+    for (let i = nDice; i--; ) {
       const body = state.dices[i].physical;
 
       if (!state.game.pickedDice[i]) {
@@ -174,7 +174,7 @@ export const createGameWorld = () => {
 
   const step = (dt: number) => {
     if (!state.game.roll.some(isBlank)) {
-      world.step(dt * 5);
+      world.step((5 * 1) / 60);
 
       for (const o of state.dices) {
         if (!isBodySleeping(o.physical)) o.stepSinceImmobile = 0;

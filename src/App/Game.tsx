@@ -45,7 +45,10 @@ export const Game_ = ({
 
   useFrame(({ camera }, dt) => {
     world.setCamera(camera.position, camera.quaternion);
-    world.step(dt);
+
+    const clampedDt = Math.min(dt, (3 * 1) / 60);
+    world.step(clampedDt);
+
     rerenderOnChange(world.state.game); // to trigger a re-render when game change
 
     refGroupDice.current?.children.forEach((c, i) => {
@@ -115,9 +118,9 @@ export const Game_ = ({
               onSelectCategory={
                 world.state.game.roll.every(isDiceValue)
                   ? (c) => {
-                    world.selectCategoryForDiceRoll(c);
-                    setScoresheetOpen(false);
-                  }
+                      world.selectCategoryForDiceRoll(c);
+                      setScoresheetOpen(false);
+                    }
                   : undefined
               }
               rollCandidate={
@@ -175,10 +178,13 @@ const useEventListeners = ({
   onDragHorizontally: (y: number) => void;
   onRelease: () => void;
 }) => {
-  const {
-    gl: { domElement },
-  } = useThree();
+  const { events } = useThree();
+
   React.useEffect(() => {
+    const domElement = document.getElementById("overlay")!;
+    const originalDomElement = events.connected;
+    events.connect?.(domElement);
+
     let anchor: { y: number } | null = null;
     const onDown = ({ y }: PointerEvent) => {
       anchor = { y };
@@ -201,13 +207,14 @@ const useEventListeners = ({
     document.addEventListener("blur", onUp);
 
     return () => {
+      events.connect?.(originalDomElement);
       domElement.removeEventListener("pointerdown", onDown);
       domElement.removeEventListener("pointermove", onMove);
       domElement.removeEventListener("pointerup", onUp);
       document.removeEventListener("mouseleave", onUp);
       document.removeEventListener("blur", onUp);
     };
-  }, [domElement]);
+  }, []);
 };
 
 export const Game = React.memo(Game_);

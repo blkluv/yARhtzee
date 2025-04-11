@@ -1,7 +1,12 @@
 import * as React from "react";
-import { Boot } from "./App/Boot";
 import { createRoot } from "react-dom/client";
+import { ErrorBoundary } from "./App/Ui/ErrorBoundary";
+import { App } from "./App/App";
 
 const container = document.getElementById("root")!;
 const root = createRoot(container);
-root.render(<Boot />);
+root.render(
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
+);

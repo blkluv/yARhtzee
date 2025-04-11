@@ -4,11 +4,13 @@ import type * as THREE from "three";
 import type { XR8, XR8Pipeline } from "./XR8";
 
 export const XR8Controls = ({
-  onReady,
+  onPoseFound,
+  onCameraFeedDisplayed,
   xr8,
 }: {
   xr8: XR8;
-  onReady?: () => void;
+  onPoseFound?: () => void;
+  onCameraFeedDisplayed?: () => void;
 }) => {
   const [error, setError] = React.useState<Error>();
   if (error) throw error;
@@ -33,7 +35,8 @@ export const XR8Controls = ({
         xr8,
 
         setError,
-        onReady
+        onPoseFound,
+        onCameraFeedDisplayed
       ),
       {
         name: "onUpdate-listener",
@@ -90,9 +93,11 @@ const createCustomPipeline = (
   xr8: XR8,
 
   onError: (error: Error) => void,
-  onTrackingReady?: () => void
+  onPoseFound?: () => void,
+  onCameraFeedDisplayed?: () => void
 ) => {
-  let trackingReadyCalled = false;
+  let poseFound = false;
+  let cameraFeedDisplayed = false;
 
   (renderer as any).xr8Started = false;
 
@@ -129,7 +134,7 @@ const createCustomPipeline = (
           reality: { rotation, position, intrinsics, trackingStatus },
         } = processCpuResult;
 
-        for (let i = 0; i < 16; i += 1)
+        for (let i = 16; i--; )
           camera.projectionMatrix.elements[i] = intrinsics[i];
         camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
 
@@ -138,19 +143,22 @@ const createCustomPipeline = (
         camera.matrixWorldNeedsUpdate = true;
 
         if (
-          !trackingReadyCalled &&
+          !poseFound &&
           (trackingStatus === "NORMAL" || trackingStatus === "LIMITED")
         ) {
-          trackingReadyCalled = true;
-          onTrackingReady?.();
+          poseFound = true;
+          onPoseFound?.();
         }
       }
     },
     onRender: () => {
-      if (!renderer) return;
-
       renderer.clearDepth();
       renderer.render(scene, camera);
+
+      if (!cameraFeedDisplayed) {
+        onCameraFeedDisplayed?.();
+        cameraFeedDisplayed = true;
+      }
     },
   };
 

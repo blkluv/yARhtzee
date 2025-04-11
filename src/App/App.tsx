@@ -1,73 +1,109 @@
 import * as React from "react";
 import * as THREE from "three";
-import { Environment, useProgress } from "@react-three/drei";
 import { GithubLogo } from "./Ui/GithubLogo";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { XR8Controls } from "../XR8Canvas/XR8Controls";
 import { useXR8 } from "../XR8Canvas/useXR8";
-import { xr8Hosted } from "../XR8Canvas/getXR8";
+import { getXR8, loadXR8, xr8Hosted } from "../XR8Canvas/getXR8";
 import { Game } from "./Game";
 import { Dice } from "./Scene/Dice";
 // @ts-ignore
 import { Visualizer } from "react-touch-visualizer";
 import tunnel from "tunnel-rat";
 import { Ground } from "./Scene/Ground";
+import { WebXRControls } from "../WebXRCanvas/WebXRControls";
 import { createPortal } from "react-dom";
+import { XR8 } from "../XR8Canvas/XR8";
+import { Environment } from "./Scene/Environment";
+import { TrackingHint } from "./Ui/Hints/TrackingHint";
+import { useProgress } from "@react-three/drei";
+import { useIsWebXRSupported } from "../WebXRCanvas/useWebXRSession";
+import { useDelay } from "./Ui/useDelay";
+import { PageRules } from "./Ui/PageRules";
+import { LoadingScreen } from "./Ui/LoadingScreen";
 
 // @ts-ignore
 const xr8ApiKey: string | undefined = import.meta.env.VITE_XR8_API_KEY;
 const touchSupported = "ontouchend" in document;
 
-type Props = {
-  started: boolean;
-  onReady: () => void;
-  onProgress?: (x: number, label: string) => void;
-};
-
-export const App = ({ onReady, onProgress, started }: Props) => {
-  const [error, setError] = React.useState<Error>();
-  if (error) throw error;
-
-  const [xr8Ready, setXr8Ready] = React.useState(false);
-
-  const xr8Supported = (xr8ApiKey || xr8Hosted) && touchSupported;
-
-  const xr8 = xr8Supported ? useXR8(xr8ApiKey) : null;
-
-  const { active, progress, total } = useProgress();
-  const ready = (!xr8Supported || xr8Ready) && !active;
-
-  let progressValue = total > 1 ? progress / 100 : 0;
-  let progressLabel = "loading assets";
-
-  if (xr8Supported) {
-    if (progressValue < 1) {
-      progressValue *= 0.6;
-    } else {
-      if (!xr8) {
-        progressValue = 0.6;
-        progressLabel = "loading xr8 library";
-      } else {
-        progressValue = 0.8;
-        progressLabel = "tracking in progress";
+export const App = () => {
+  const [state, setState] = React.useState<
+    | { type: "loading" }
+    | { type: "waiting-user-input" }
+    | {
+        type: "webXR";
+        poseFound?: boolean;
+        cameraFeedDisplayed?: boolean;
+        webXRSession?: XRSession;
       }
-    }
-  }
-
-  React.useEffect(
-    () => void onProgress?.(progressValue, progressLabel),
-    [progressValue, progressLabel]
-  );
-  React.useEffect(() => void (ready && onReady()), [ready]);
+    | {
+        type: "xr8";
+        poseFound?: boolean;
+        cameraFeedDisplayed?: boolean;
+        xr8?: XR8;
+      }
+    | { type: "flat" }
+  >({ type: "waiting-user-input" });
 
   const uiTunnel = React.useMemo(tunnel, []);
 
+  const [error, setError] = React.useState<Error>();
+  if (error) throw error;
+
+  const startWebXR = () => {
+    setState({ type: "webXR" });
+
+    // this call must be made after a user input
+    return navigator.xr
+      ?.requestSession("immersive-ar", {
+        optionalFeatures: ["dom-overlay", "local-floor"],
+        domOverlay: { root: document.getElementById("overlay")! },
+      })
+      .then((webXRSession) =>
+        setState({
+          type: "webXR",
+          webXRSession,
+        })
+      )
+      .catch(setError);
+  };
+
+  const startXR8 = () => {
+    setState({ type: "xr8" });
+    loadXR8(xr8ApiKey)
+      .then((xr8) => setState({ type: "xr8", xr8 }))
+      .catch(setError);
+  };
+
+  const startFlat = () => setState({ type: "flat" });
+
+  const webXRSupported = useIsWebXRSupported();
+
+  const xr8Supported = (!!xr8ApiKey || xr8Hosted) && touchSupported;
+
+  const sceneAssetLoaded = useProgress(({ active }) => !active);
+
+  const readyForRender =
+    sceneAssetLoaded &&
+    (state.type === "flat" ||
+      (state.type === "webXR" && state.cameraFeedDisplayed) ||
+      (state.type === "xr8" && state.cameraFeedDisplayed));
+
+  const readyForGame =
+    readyForRender &&
+    !(state.type === "webXR" && !state.poseFound) &&
+    !(state.type === "xr8" && !state.cameraFeedDisplayed);
+
+  const hint = useDelay(readyForRender && !readyForGame && "tracking", 2500);
+
+  if (webXRSupported === "loading") return null;
+
+  if (state.type === "loading") return null;
+
   return (
     <>
-      {false && <Visualizer />}
-
       <Canvas
-        camera={{ position: new THREE.Vector3(0, 6, 6) }}
+        camera={{ position: new THREE.Vector3(0, 6, 6), near: 0.1, far: 1000 }}
         shadows
         style={{
           position: "fixed",
@@ -75,69 +111,104 @@ export const App = ({ onReady, onProgress, started }: Props) => {
           left: 0,
           right: 0,
           bottom: 0,
-          opacity: started ? 1 : 0,
           touchAction: "none",
+          opacity: readyForRender ? 1 : 0,
         }}
       >
-        <ErrorBoundary onError={setError}>
-          {xr8 && <XR8Controls xr8={xr8} onReady={() => setXr8Ready(true)} />}
+        {state.type === "xr8" && state.xr8 && (
+          <XR8Controls
+            xr8={state.xr8}
+            onPoseFound={() => setState((s) => ({ ...s, poseFound: true }))}
+            onCameraFeedDisplayed={() =>
+              setState((s) => ({ ...s, cameraFeedDisplayed: true }))
+            }
+          />
+        )}
 
-          <React.Suspense fallback={null}>
-            <Environment path={"assets/"} files={"lebombo_1k.hdr"} />
+        {state.type === "webXR" && state.webXRSession && (
+          <WebXRControls
+            worldSize={8}
+            webXRSession={state.webXRSession}
+            onPoseFound={() => setState((s) => ({ ...s, poseFound: true }))}
+            onCameraFeedDisplayed={() =>
+              setState((s) => ({ ...s, cameraFeedDisplayed: true }))
+            }
+          />
+        )}
 
-            {started && <Game UiPortal={uiTunnel.In} />}
+        <React.Suspense fallback={null}>
+          <Environment />
 
-            {active && <Dice value={1} /> /* ensure the model is loaded */}
-          </React.Suspense>
+          {
+            /* preload the dice model */
+            !readyForGame && (
+              <Dice
+                position={[999, 999, 9999]}
+                scale={[0.0001, 0.0001, 0.0001]}
+              />
+            )
+          }
 
-          <directionalLight position={[10, 8, 6]} intensity={0} castShadow />
+          {readyForGame && <Game UiPortal={uiTunnel.In} />}
+        </React.Suspense>
 
-          <Ground />
-        </ErrorBoundary>
+        <directionalLight position={[10, 8, 6]} intensity={0} castShadow />
+
+        <Ground />
       </Canvas>
 
-      {createPortal(
-        <>
-          <a href="https://github.com/platane/yAR-htzee" title="github">
-            <button
-              style={{
-                position: "absolute",
-                width: "40px",
-                height: "40px",
-                bottom: "10px",
-                right: "10px",
-                pointerEvents: "auto",
-                zIndex: 1,
-              }}
-            >
-              <GithubLogo />
-            </button>
-          </a>
+      <OverlayPortal>
+        {false && <Visualizer />}
 
-          {React.createElement(uiTunnel.Out)}
-        </>,
-        document.getElementById("overlay")!
-      )}
+        <a href="https://github.com/platane/yAR-htzee" title="github">
+          <button
+            style={{
+              position: "absolute",
+              width: "40px",
+              height: "40px",
+              bottom: "10px",
+              right: "10px",
+              pointerEvents: "auto",
+              zIndex: 1,
+            }}
+          >
+            <GithubLogo />
+          </button>
+        </a>
+
+        {React.createElement(uiTunnel.Out)}
+
+        {hint === "tracking" && <TrackingHint />}
+
+        {!readyForRender && (
+          <Over>
+            <LoadingScreen
+              loading={state.type !== "waiting-user-input"}
+              onStartFlat={startFlat}
+              onStartWebXR={webXRSupported && startWebXR}
+              onStartXR8={xr8Supported && startXR8}
+            />
+          </Over>
+        )}
+      </OverlayPortal>
     </>
   );
 };
 
-class ErrorBoundary extends React.Component<{
-  onError: (error: Error) => void;
-  children?: any;
-}> {
-  static getDerivedStateFromError = (error: Error) => ({ error });
+const OverlayPortal = ({ children }: { children?: any }) =>
+  createPortal(children, document.getElementById("overlay")!);
 
-  state: { error?: Error } = {};
-
-  componentDidCatch(error: Error) {
-    this.props.onError(error);
-  }
-
-  render() {
-    if (this.state.error) return null;
-    return this.props.children;
-  }
-}
-
-export default App;
+const Over = ({ children }: { children?: any }) => (
+  <div
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      backgroundColor: "white",
+    }}
+  >
+    {children}
+  </div>
+);

@@ -21,12 +21,14 @@ it("should play game", () => {
   game = validateReroll(game);
 
   expect(game.roll).toEqual([1, 2, "blank", 1, 4]);
+  game = startRolling(game);
+  expect(game.roll).toEqual([1, 2, "rolling", 1, 4]);
 
   game = setRoll(game, [1, 2, 6, 1, 4]);
   expect(game.roll).toEqual([1, 2, 6, 1, 4]);
 });
 
-it("should guard against rolling if nothing is picked", () => {
-  const game = setRoll(createEmptyGame(5), [1, 2, 3, 2, 4]);
-  expect(game).toBe(startRolling(game));
+it("should guard against rolling if nothing is rolling", () => {
+  let game = createEmptyGame(5);
+  expect(game).toBe(setRoll(game, [1, 2, 3, 4, 5]));
 });

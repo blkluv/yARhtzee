@@ -2,37 +2,64 @@ import * as React from "react";
 import { PageRules } from "./PageRules";
 
 type Props = {
-  onClose: () => void;
-  status: "ready" | { progressValue: number; progressLabel: string };
+  loading: boolean;
+  onStartFlat?: false | (() => void);
+  onStartXR8?: false | (() => void);
+  onStartWebXR?: false | (() => void);
 };
 
-export const LoadingScreen = ({ onClose, status }: Props) => (
-  <div
-    style={{
-      padding: "10px",
-      display: "flex",
-      flexDirection: "column",
-      position: "relative",
-      zIndex: 2,
-    }}
-  >
+export const LoadingScreen = ({
+  loading,
+  onStartFlat,
+  onStartXR8,
+  onStartWebXR,
+}: Props) => (
+  <div className="loading-screen">
+    <style>{style}</style>
+
     <PageRules />
 
-    <button
+    <div
       style={{
-        width: "160px",
-        height: "40px",
         marginTop: "60px",
-        alignSelf: "center",
+        gap: "10px",
+        display: "flex",
+        flexDirection: "column",
       }}
-      onClick={onClose}
-      disabled={status != "ready"}
     >
-      {status === "ready"
-        ? "Start"
-        : `${status.progressLabel} ${(status.progressValue * 100)
-            .toFixed(0)
-            .padStart(3, " ")}% ...`}
-    </button>
+      {onStartFlat && (
+        <button disabled={loading} onClick={onStartFlat}>
+          Start 3D
+        </button>
+      )}
+      <div style={{ marginTop: "10px" }} />
+      {onStartWebXR && (
+        <button disabled={loading} onClick={onStartWebXR}>
+          Start with WebXR
+        </button>
+      )}
+      {onStartXR8 && (
+        <button disabled={loading} onClick={onStartXR8}>
+          Start with 8thWall
+        </button>
+      )}
+    </div>
   </div>
 );
+
+const style = `
+.loading-screen {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+.loading-screen button{
+  width: 160px;
+  height: 42px;
+  align-self: center;
+}
+`;

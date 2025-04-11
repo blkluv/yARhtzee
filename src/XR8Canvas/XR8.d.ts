@@ -128,7 +128,24 @@ export type XR8Pipeline = {
       reality?: {
         rotation?: { x: number; y: number; z: number; w: number };
         position?: { x: number; y: number; z: number };
-        intrinsics: number[];
+        intrinsics: [
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number
+        ];
         trackingStatus: "NORMAL" | "UNSPECIFIED" | "NOT_AVAILABLE" | "LIMITED";
       };
     };
