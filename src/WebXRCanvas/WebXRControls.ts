@@ -26,8 +26,6 @@ export const WebXRControls = ({
     events,
   } = useThree();
 
-  const viewRef = React.useRef<XRView>(undefined);
-
   // let webXR control the render loop
   // ie: do nothing on react-three-fiber render loop
   useFrame(() => {
@@ -37,17 +35,39 @@ export const WebXRControls = ({
   React.useLayoutEffect(() => {
     const gl = renderer.getContext();
 
+    const originalRenderTarget = renderer.getRenderTarget();
+
+    //
+    // create the XRWebGLLayer, bind three render target to it
     gl.makeXRCompatible()
-      .then(() =>
-        webXRSession.updateRenderState({
-          baseLayer: new XRWebGLLayer(webXRSession, gl),
-        })
-      )
-      .then(() => console.log("updateRenderState done"))
+      .then(() => {
+        const baseLayer = new XRWebGLLayer(webXRSession, gl);
+
+        const newRenderTarget = new THREE.WebGLRenderTarget(
+          baseLayer.framebufferWidth,
+          baseLayer.framebufferHeight,
+          {
+            format: THREE.RGBAFormat,
+            type: THREE.UnsignedByteType,
+            colorSpace: renderer.outputColorSpace,
+            stencilBuffer: gl.getContextAttributes()?.stencil,
+          }
+        );
+
+        // @ts-ignore
+        renderer.setRenderTargetFramebuffer(
+          newRenderTarget,
+          baseLayer.framebuffer
+        );
+        renderer.setRenderTarget(newRenderTarget);
+
+        return webXRSession.updateRenderState({ baseLayer });
+      })
       .catch(setError);
 
+    //
+    // ask webXR for a local reference, (which we can then use to have the camera transform)
     let localReference: XRReferenceSpace;
-
     webXRSession
       .requestReferenceSpace("local-floor")
       .then((r) => {
@@ -62,47 +82,25 @@ export const WebXRControls = ({
 
     let cancelAnimationFrame: number;
     let lastTimestampMs: number;
-    let origin: THREE.Vector3 | undefined;
     let renderCount = 0;
+    let poseFound = false;
 
     const onXRFrame: XRFrameRequestCallback = (timestampMs, frame) => {
       const pose = localReference && frame.getViewerPose(localReference);
 
       const view = pose?.views[0];
+      const glLayer = webXRSession.renderState.baseLayer;
 
-      if (view) {
-        if (!viewRef.current) {
-          const glLayer = webXRSession.renderState.baseLayer!;
+      // check view exist (ie: tracking is ready)
+      if (view && glLayer) {
+        const viewport = glLayer.getViewport(view)!;
 
-          const newRenderTarget = new THREE.WebGLRenderTarget(
-            glLayer.framebufferWidth,
-            glLayer.framebufferHeight,
-            {
-              format: THREE.RGBAFormat,
-              type: THREE.UnsignedByteType,
-              colorSpace: renderer.outputColorSpace,
-              stencilBuffer: gl.getContextAttributes()?.stencil,
-            }
-          );
-
-          // @ts-ignore
-          renderer.setRenderTargetFramebuffer(
-            newRenderTarget,
-            glLayer.framebuffer
-          );
-          renderer.setRenderTarget(newRenderTarget);
-
-          const viewport = glLayer.getViewport(view)!;
-
-          renderer.setViewport(
-            viewport.x,
-            viewport.y,
-            viewport.width,
-            viewport.height
-          );
-
-          viewRef.current = view;
-        }
+        renderer.setViewport(
+          viewport.x,
+          viewport.y,
+          viewport.width,
+          viewport.height
+        );
 
         camera.position.set(
           view.transform.position.x * worldSize,
@@ -122,22 +120,9 @@ export const WebXRControls = ({
 
         camera.matrixWorldNeedsUpdate = true;
 
-        if (!origin) {
-          // define origin,
-          // a point on the ground
-          const v = new THREE.Vector3(0, 0, -1);
-          v.applyQuaternion(camera.quaternion);
-          v.normalize();
-
-          const t = -camera.position.y / v.y;
-
-          if (t > 0) {
-            origin = new THREE.Vector3()
-              .copy(camera.position)
-              .addScaledVector(v, t);
-
-            onPoseFound?.();
-          }
+        if (!poseFound) {
+          onPoseFound?.();
+          poseFound = true;
         }
 
         const dt = (timestampMs - (lastTimestampMs ?? timestampMs)) / 1000;
@@ -160,11 +145,12 @@ export const WebXRControls = ({
     cancelAnimationFrame = webXRSession.requestAnimationFrame(onXRFrame);
     setFrameloop("never");
 
-    // the renderer.domElement is no longer receiving events
+    // the renderer.domElement is no longer receiving events,
+    // connect to window instead
     events.connect?.(window);
 
     return () => {
-      // TODO: reset the framebuffer
+      renderer.setRenderTarget(originalRenderTarget);
 
       setFrameloop("always");
       webXRSession.cancelAnimationFrame(cancelAnimationFrame);

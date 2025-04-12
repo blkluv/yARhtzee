@@ -8,7 +8,13 @@ export class ErrorBoundary extends React.Component<{ children: any }> {
   }
 
   render() {
-    if (this.state.error) return <h1>something bad happened</h1>;
+    if (this.state.error)
+      return (
+        <>
+          <h1>something bad happened</h1>
+          <pre>{this.state.error.message || this.state.error.name}</pre>
+        </>
+      );
     return this.props.children;
   }
 }
