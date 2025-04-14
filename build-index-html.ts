@@ -5,7 +5,7 @@ import { App } from "./src/App/App";
 
 console.log("📸 rendering loading screen to string...");
 
-const appContent = renderToString(React.createElement(App, { loading: true }));
+const appContent = renderToString(React.createElement(App));
 
 console.log("🖊 replacing content in index.html...");
 

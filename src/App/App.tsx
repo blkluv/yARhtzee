@@ -25,7 +25,13 @@ const xr8ApiKey: string | undefined = import.meta.env.VITE_XR8_API_KEY;
 const touchSupported =
   typeof document !== "undefined" && "ontouchend" in document;
 
-export const App = ({ loading = false }: { loading?: boolean }) => {
+const useIsSSR = () => {
+  const [isSSR, setNotSSR] = React.useReducer((_: boolean) => false, true);
+  React.useEffect(setNotSSR, []);
+  return isSSR;
+};
+
+export const App = () => {
   let [state, setState] = React.useState<
     | { type: "loading" }
     | { type: "waiting-user-input" }
@@ -44,8 +50,8 @@ export const App = ({ loading = false }: { loading?: boolean }) => {
     | { type: "flat" }
   >({ type: "waiting-user-input" });
 
-  // force the state to loading
-  if (loading) state = { type: "loading" };
+  // force the state to be loading in SSR
+  if (useIsSSR()) state = { type: "loading" };
 
   const uiTunnel = React.useMemo(tunnel, []);
 
@@ -100,66 +106,68 @@ export const App = ({ loading = false }: { loading?: boolean }) => {
 
   return (
     <>
-      <CanvasContainerPortal>
-        <Canvas
-          camera={{
-            position: new THREE.Vector3(0, 6, 6),
-            near: 0.1,
-            far: 1000,
-          }}
-          shadows
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            touchAction: "none",
-            opacity: readyForRender ? 1 : 0,
-          }}
-        >
-          {state.type === "xr8" && state.xr8 && (
-            <XR8Controls
-              xr8={state.xr8}
-              onPoseFound={() => setState((s) => ({ ...s, poseFound: true }))}
-              onCameraFeedDisplayed={() =>
-                setState((s) => ({ ...s, cameraFeedDisplayed: true }))
+      {state.type !== "loading" && (
+        <CanvasContainerPortal>
+          <Canvas
+            camera={{
+              position: new THREE.Vector3(0, 6, 6),
+              near: 0.1,
+              far: 1000,
+            }}
+            shadows
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              touchAction: "none",
+              opacity: readyForRender ? 1 : 0,
+            }}
+          >
+            {state.type === "xr8" && state.xr8 && (
+              <XR8Controls
+                xr8={state.xr8}
+                onPoseFound={() => setState((s) => ({ ...s, poseFound: true }))}
+                onCameraFeedDisplayed={() =>
+                  setState((s) => ({ ...s, cameraFeedDisplayed: true }))
+                }
+              />
+            )}
+
+            {state.type === "webXR" && state.webXRSession && (
+              <WebXRControls
+                worldSize={8}
+                webXRSession={state.webXRSession}
+                onPoseFound={() => setState((s) => ({ ...s, poseFound: true }))}
+                onCameraFeedDisplayed={() =>
+                  setState((s) => ({ ...s, cameraFeedDisplayed: true }))
+                }
+              />
+            )}
+
+            <React.Suspense fallback={null}>
+              <Environment />
+
+              {
+                /* preload the dice model */
+                !readyForGame && (
+                  <Dice
+                    position={[999, 999, 9999]}
+                    scale={[0.0001, 0.0001, 0.0001]}
+                  />
+                )
               }
-            />
-          )}
 
-          {state.type === "webXR" && state.webXRSession && (
-            <WebXRControls
-              worldSize={8}
-              webXRSession={state.webXRSession}
-              onPoseFound={() => setState((s) => ({ ...s, poseFound: true }))}
-              onCameraFeedDisplayed={() =>
-                setState((s) => ({ ...s, cameraFeedDisplayed: true }))
-              }
-            />
-          )}
+              {readyForGame && <Game UiPortal={uiTunnel.In} />}
+            </React.Suspense>
 
-          <React.Suspense fallback={null}>
-            <Environment />
+            <directionalLight position={[10, 8, 6]} intensity={0} castShadow />
 
-            {
-              /* preload the dice model */
-              !readyForGame && (
-                <Dice
-                  position={[999, 999, 9999]}
-                  scale={[0.0001, 0.0001, 0.0001]}
-                />
-              )
-            }
-
-            {readyForGame && <Game UiPortal={uiTunnel.In} />}
-          </React.Suspense>
-
-          <directionalLight position={[10, 8, 6]} intensity={0} castShadow />
-
-          <Ground />
-        </Canvas>
-      </CanvasContainerPortal>
+            <Ground />
+          </Canvas>
+        </CanvasContainerPortal>
+      )}
 
       {false && <Visualizer />}
 
@@ -197,10 +205,8 @@ export const App = ({ loading = false }: { loading?: boolean }) => {
   );
 };
 
-const CanvasContainerPortal = ({ children }: { children?: any }) => {
-  if (typeof document === "undefined") return null;
-  return createPortal(children, document.getElementById("canvas-container")!);
-};
+const CanvasContainerPortal = ({ children }: { children?: any }) =>
+  createPortal(children, document.getElementById("canvas-container")!);
 
 const Over = ({ children }: { children?: any }) => (
   <div
