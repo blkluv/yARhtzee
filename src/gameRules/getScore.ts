@@ -1,6 +1,6 @@
-import { Category } from "./types";
+import { Category, DiceValue } from "./types";
 
-export const getScore = (category: Category, set: number[]) => {
+export const getScore = (category: Category, set: DiceValue[]) => {
   switch (category) {
     case "Aces":
       return upScore(1)(set);
@@ -54,7 +54,7 @@ const upScore = (n: number) => (set: number[]) =>
 
 const sumScore = (set: number[]) => set.reduce((s, x) => s + x, 0);
 
-const count = (set: number[]) => {
+const count = (set: DiceValue[]) => {
   const o = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
   for (const n of set) (o as any)[n]++;
 

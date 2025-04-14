@@ -6,7 +6,7 @@ import { path as refreshIconPath } from "../Ui/RefreshIcon";
 
 const springParams = { tension: 120, friction: 8 };
 
-const createTexture = async () => {
+const createCanvas = async () => {
   const width = 256;
   const height = 256;
 
@@ -16,7 +16,7 @@ const createTexture = async () => {
 
   const img = new Image();
   const svg = `<svg viewBox="0 0 100 100" width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="${refreshIconPath}" fill="#888"/></svg>`;
-  const src = `data:image/svg+xml;base64,${btoa(svg)}`;
+  const src = "data:image/svg+xml," + encodeURIComponent(svg);
 
   await new Promise((resolve, reject) => {
     img.addEventListener("load", resolve);
@@ -38,10 +38,10 @@ const createTexture = async () => {
   return canvas;
 };
 
-let texture: THREE.Texture;
-createTexture().then((t) => {
-  texture = new THREE.CanvasTexture(
-    t,
+let texturePromise: Promise<THREE.Texture>;
+const createTexture = async () => {
+  const texture = new THREE.CanvasTexture(
+    await createCanvas(),
     THREE.UVMapping,
     THREE.ClampToEdgeWrapping,
     THREE.ClampToEdgeWrapping,
@@ -50,9 +50,19 @@ createTexture().then((t) => {
     THREE.RGBAFormat
   );
   texture.generateMipmaps = true;
-});
+  return texture;
+};
+
+const useTexture = () => {
+  const [texture, setTexture] = React.useState<THREE.Texture>();
+  React.useEffect(() => {
+    (texturePromise = texturePromise || createTexture()).then(setTexture);
+  }, []);
+  return texture;
+};
 
 export const SelectedDiceHint = ({ selected }: any) => {
+  const texture = useTexture();
   const spring = React.useRef({ x: 0, v: 0, target: 0 });
   spring.current.target = selected ? 1 : 0;
 

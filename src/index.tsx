@@ -1,11 +1,11 @@
 import * as React from "react";
-import { createRoot } from "react-dom/client";
+import { hydrateRoot, createRoot } from "react-dom/client";
 import { ErrorBoundary } from "./App/Ui/ErrorBoundary";
 import { App } from "./App/App";
 
-const container = document.getElementById("root")!;
-const root = createRoot(container);
-root.render(
+const domNode = document.getElementById("overlay")!;
+hydrateRoot(
+  domNode,
   <ErrorBoundary>
     <App />
   </ErrorBoundary>

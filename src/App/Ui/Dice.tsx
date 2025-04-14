@@ -15,7 +15,13 @@ export const Dice = ({
   lineColor = "#333",
   ...props
 }: Props & {}) => (
-  <svg width={28} height={28} {...props} viewBox="-50 -50 200 200">
+  <svg
+    width={28}
+    height={28}
+    {...props}
+    viewBox="-50 -50 200 200"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <rect
       x={-40}
       y={-40}

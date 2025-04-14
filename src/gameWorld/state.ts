@@ -1,5 +1,5 @@
 import * as CANNON from "cannon-es";
-import { clamp } from "three/src/math/MathUtils";
+import * as THREE from "three";
 import {
   type Category,
   isDiceValue,
@@ -19,6 +19,8 @@ import {
   togglePickedDice,
   validateReroll,
 } from "../gameRules/game";
+
+const { clamp } = THREE.MathUtils;
 
 export const createGameWorld = () => {
   //

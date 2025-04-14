@@ -20,6 +20,7 @@ jobs:
       - run: bunx vite build --base yAR-htzee
         env:
           VITE_XR8_API_KEY: ${{ secrets.VITE_XR8_API_KEY }}
+      - run: bun build-index-html.ts
       - run: cp doc/* ./dist/
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -7,7 +7,8 @@ import type { XR8 } from "./XR8";
  */
 export const getXR8 = (): XR8 | null => (window as any).XR8 || null;
 
-export const xr8Hosted = window.location.host.endsWith("8thwall.app");
+export const xr8Hosted =
+  typeof window !== "undefined" && window.location.host.endsWith("8thwall.app");
 
 /**
  *
