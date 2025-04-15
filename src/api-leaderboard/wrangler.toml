@@ -14,7 +14,7 @@ bucket_name = "yar-htzee-leaderboard-images"
 [vars]
 # GITHUB_ACCESS_TOKEN = "XXX" # it's passed as a secret
 LEADER_BOARD_REPOSITORY = "platane/yAR-htzee"
-LEADER_BOARD_ISSUE_NUMBER = "5"
+LEADER_BOARD_ISSUE_NUMBER = "6"
 IMAGES_BUCKET_PUBLIC_URL = "https://pub-6518f5a0bbad459698868dfbf8d106df.r2.dev/"
 
 
