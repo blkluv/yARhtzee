@@ -67,12 +67,12 @@ export const App = () => {
         optionalFeatures: ["dom-overlay", "local-floor"],
         domOverlay: { root: document.getElementById("overlay")! },
       })
-      .then((webXRSession) =>
-        setState({
-          type: "webXR",
-          webXRSession,
-        })
-      )
+      .then((webXRSession) => {
+        // reset to this state when user end session
+        webXRSession.onend = () => setState({ type: "waiting-user-input" });
+
+        setState({ type: "webXR", webXRSession });
+      })
       .catch(setError);
   };
 
