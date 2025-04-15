@@ -73,6 +73,36 @@ export const Dice = ({
   </svg>
 );
 
+export const renderDiceSvgToString = ({
+  value,
+  diceColor = "#f8f8f8",
+  lineColor = "#333",
+}: {
+  diceColor?: string;
+  lineColor?: string;
+  value: 1 | 2 | 3 | 4 | 5 | 6 | "blank";
+}) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="-50 -50 200 200">` +
+  `<rect
+      x="-40"
+      y="-40"
+      width="180"
+      height="180"
+      rx="15"
+      fill="${diceColor}"
+      stroke="${lineColor}"
+      strokeWidth="8"
+    />` +
+  (typeof value === "number"
+    ? dots[value]
+        .map(
+          ({ x, y }) =>
+            `<circle  cx="${x}" cy="${y}" r="16" fill="${lineColor}" />`
+        )
+        .join("")
+    : "") +
+  "</svg>";
+
 const dots = {
   1: [
     //

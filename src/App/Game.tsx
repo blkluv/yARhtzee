@@ -6,15 +6,23 @@ import { Dice } from "./Scene/Dice";
 import { ThrowHint } from "./Ui/Hints/ThrowHint";
 import { PickHint } from "./Ui/Hints/PickHint";
 import { PullHint } from "./Ui/Hints/PullHint";
-import { isDiceValue, isScoreSheetEmpty } from "../gameRules/types";
-import { Overlay } from "./Ui/Overlay";
-import { ScoreSheet } from "./Ui/ScoreSheet/ScoreSheet";
+import {
+  type Category,
+  categories,
+  isDiceValue,
+  isScoreSheetEmpty,
+  isScoreSheetFinished,
+} from "../gameRules/types";
 import { ScaleOnPulse } from "./Scene/ScaleOnPulse";
 import { SelectedDiceHint } from "./Scene/SelectedDiceHint";
 import { useDelay } from "./Ui/useDelay";
 import { Target } from "./Scene/Target";
 import { createGameWorld } from "../gameWorld/state";
 import { type Game as IGame, isBlank, nReroll } from "../gameRules/game";
+import { createSceneScreenshot } from "./createSceneScreenshot";
+import { ScoreSheetContent } from "./Ui/ScoreSheet/ScoreSheetContent";
+import { LeaderboardSubmission } from "./Ui/ScoreSheet/LeaderboardSubmission";
+import { DialogModal } from "./Ui/DialogModal-fallback";
 
 export const Game_ = ({
   UiPortal,
@@ -22,6 +30,16 @@ export const Game_ = ({
   UiPortal: (props: { children: any }) => null;
 }) => {
   const world = React.useMemo(createGameWorld, []);
+
+  const [screenshots, saveScreenshot] = React.useReducer(
+    (s, { category, blob }: { category: Category; blob: Blob }) => ({
+      ...s,
+      [category]: blob,
+    }),
+    {} as Record<Category, Blob>
+  );
+  const { scene } = useThree();
+  const { getImage } = React.useMemo(createSceneScreenshot, []);
 
   const [dragging, setDragging] = React.useState(false);
   const [scoresheetOpen, setScoresheetOpen] = React.useState(false);
@@ -75,6 +93,7 @@ export const Game_ = ({
                 e.stopPropagation();
                 world.toggleDicePicked(i);
               }}
+              userData={{ diceIndex: i }}
             />
           </ScaleOnPulse>
         ))}
@@ -105,49 +124,62 @@ export const Game_ = ({
 
         {!dragging && !scoresheetOpen && <Hint game={world.state.game} />}
 
-        {scoresheetOpen && (
-          <Overlay>
-            <ScoreSheet
-              style={{
-                width: "calc( 100% - 40px )",
-                maxWidth: "600px",
-                pointerEvents: "auto",
-              }}
-              scoreSheet={world.state.game.scoreSheet}
-              onClose={() => setScoresheetOpen(false)}
-              onSelectCategory={
-                world.state.game.roll.every(isDiceValue)
-                  ? (c) => {
-                      world.selectCategoryForDiceRoll(c);
-                      setScoresheetOpen(false);
-                    }
-                  : undefined
-              }
-              rollCandidate={
-                world.state.game.roll.every(isDiceValue)
-                  ? world.state.game.roll
-                  : undefined
-              }
-            />
-          </Overlay>
-        )}
+        <DialogModal
+          open={scoresheetOpen}
+          onClose={() => setScoresheetOpen(false)}
+          style={{ width: "min(100%,600px)" }}
+        >
+          <h3 style={{ paddingLeft: "10px" }}>Score Sheet</h3>
 
-        {!scoresheetOpen && (
-          <button
-            style={{
-              position: "absolute",
-              width: "160px",
-              height: "40px",
-              bottom: "10px",
-              right: "60px",
-              zIndex: 1,
-              pointerEvents: "auto",
-            }}
-            onClick={() => setScoresheetOpen(true)}
-          >
-            score sheet
-          </button>
-        )}
+          <ScoreSheetContent
+            scoreSheet={world.state.game.scoreSheet}
+            rollCandidate={
+              (world.state.game.roll.every(isDiceValue) &&
+                world.state.game.roll) ||
+              null
+            }
+            onSelectCategory={
+              world.state.game.roll.every(isDiceValue)
+                ? (category) => {
+                    const roll = world.state.game.roll;
+                    if (!roll.every(isDiceValue)) return;
+
+                    getImage(scene, roll, category).then((blob) =>
+                      saveScreenshot({ blob, category })
+                    );
+
+                    world.selectCategoryForDiceRoll(category);
+                    if (!isScoreSheetFinished(world.state.game.scoreSheet))
+                      setScoresheetOpen(false);
+                  }
+                : undefined
+            }
+          />
+
+          {isScoreSheetFinished(world.state.game.scoreSheet) && (
+            <div style={{ marginTop: "16px", minHeight: "30px" }}>
+              <LeaderboardSubmission
+                scoreSheet={world.state.game.scoreSheet}
+                screenshots={screenshots}
+              />
+            </div>
+          )}
+        </DialogModal>
+
+        <button
+          style={{
+            position: "absolute",
+            width: "160px",
+            height: "40px",
+            bottom: "10px",
+            right: "60px",
+            zIndex: 1,
+            pointerEvents: "auto",
+          }}
+          onClick={() => setScoresheetOpen(true)}
+        >
+          score sheet
+        </button>
       </UiPortal>
     </>
   );

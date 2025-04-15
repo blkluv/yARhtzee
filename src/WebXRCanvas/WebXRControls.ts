@@ -149,13 +149,17 @@ export const WebXRControls = ({
     // connect to window instead
     events.connect?.(window);
 
+    console.log(webXRSession.supportedFrameRates, webXRSession.domOverlayState);
+    webXRSession.addEventListener("visibilitychange", () =>
+      console.log(webXRSession.visibilityState)
+    );
+    webXRSession.addEventListener("end", () => console.log("end"));
+
     return () => {
       renderer.setRenderTarget(originalRenderTarget);
 
       setFrameloop("always");
       webXRSession.cancelAnimationFrame(cancelAnimationFrame);
-
-      webXRSession.end();
     };
   }, [webXRSession, renderer]);
 

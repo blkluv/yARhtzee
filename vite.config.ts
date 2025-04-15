@@ -4,7 +4,7 @@ import { execSync } from "child_process";
 export default () =>
   ({
     server: {
-      // https: { key, cert }, // uncomment for https server
+      https: { key, cert }, // uncomment for https server
     },
     plugins: [
       {

@@ -22,7 +22,6 @@ type Props = {
 export const ScoreSheetContent = ({
   scoreSheet,
   rollCandidate,
-  onOpenTooltip,
   onSelectCategory,
   style,
 }: Props) => (
@@ -42,7 +41,7 @@ export const ScoreSheetContent = ({
     >
       <tr style={{ border: "1px solid #ddd", height: "36px" }}>
         <th>Combination</th>
-        <th>Score</th>
+        <th style={{ minWidth: "104px" }}>Score</th>
       </tr>
       {categories.slice(0, 6).map((category) => (
         <Line
@@ -50,7 +49,6 @@ export const ScoreSheetContent = ({
           category={category}
           roll={scoreSheet[category]}
           rollCandidate={rollCandidate ?? null}
-          onOpenTooltip={onOpenTooltip}
           onSelect={onSelectCategory && (() => onSelectCategory(category))}
         />
       ))}
@@ -63,7 +61,6 @@ export const ScoreSheetContent = ({
           category={category}
           roll={scoreSheet[category]}
           rollCandidate={rollCandidate ?? null}
-          onOpenTooltip={onOpenTooltip}
           onSelect={onSelectCategory && (() => onSelectCategory(category))}
         />
       ))}
@@ -85,16 +82,9 @@ type LineProps = {
   category: Category;
   roll: DiceValue[] | null;
   rollCandidate: DiceValue[] | null;
-  onOpenTooltip?: (label: string) => void;
   onSelect?: () => void;
 };
-const Line = ({
-  category,
-  roll,
-  rollCandidate,
-  onSelect,
-  onOpenTooltip,
-}: LineProps) => {
+const Line = ({ category, roll, rollCandidate, onSelect }: LineProps) => {
   const i = categories.indexOf(category);
 
   return (
@@ -107,15 +97,6 @@ const Line = ({
           />
         )}
         <span>{category}</span>
-
-        {onOpenTooltip && (
-          <button
-            style={{ margin: "0 8px", marginLeft: "auto" }}
-            onClick={() => onOpenTooltip(category)}
-          >
-            ?
-          </button>
-        )}
       </Td>
       <Td>
         {roll && (

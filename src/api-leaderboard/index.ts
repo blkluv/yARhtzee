@@ -136,7 +136,7 @@ const handler = async (req: Request, env: Env) => {
   entries.push({ score: getScoreSheetScore(scoreSheet), block: markdownBlock });
   entries.sort((a, b) => b.score - a.score);
 
-  while (entries.length > 10) entries.pop();
+  while (entries.length > 20) entries.pop();
 
   await setLeaderboard(env, id, entries);
 
