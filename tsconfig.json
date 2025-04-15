@@ -3,8 +3,8 @@
     "jsx": "react",
     "moduleResolution": "node",
     "module": "es2020",
-    "target": "es2020",
-    "lib": ["dom", "es2020"],
+    "target": "es2024",
+    "lib": ["dom", "es2024"],
     "skipLibCheck": true,
     "strict": true
   },
