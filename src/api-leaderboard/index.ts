@@ -97,7 +97,11 @@ const handler = async (req: Request, env: Env) => {
   })();
 
   const markdownBlock =
-    `## ${getScoreSheetScore(scoreSheet)} by ${markdownUser}\n` +
+    "<details>\n" +
+    `<summary>${getScoreSheetScore(
+      scoreSheet
+    )} by ${markdownUser}</summary>\n` +
+    "\n" +
     "|Combination|Score|Screenshot|\n" +
     "|--|--|--|\n" +
     categories
@@ -120,7 +124,9 @@ const handler = async (req: Request, env: Env) => {
           }"/>` +
           " |"
       )
-      .join("\n");
+      .join("\n") +
+    "\n" +
+    "</details>";
 
   const { entries, id } = await getLeaderboard(env);
 
@@ -130,7 +136,7 @@ const handler = async (req: Request, env: Env) => {
   entries.push({ score: getScoreSheetScore(scoreSheet), block: markdownBlock });
   entries.sort((a, b) => b.score - a.score);
 
-  while (entries.length > 6) entries.pop();
+  while (entries.length > 10) entries.pop();
 
   await setLeaderboard(env, id, entries);
 
@@ -171,7 +177,9 @@ const getLeaderboard = async (env: Env) => {
   const body = data.repository.issue.body as string;
   const id = data.repository.issue.id as string;
   const entries = [
-    ...body.matchAll(/## (\d+)[^\n]*\n(\|[^\n]*\|\n?){3,}/g),
+    ...body.matchAll(
+      /<details>\s*<summary>(\d+).*<\/summary>\n\n(\|.*\|\n){3,}<\/details>/g
+    ),
   ].map(([block, score]) => ({ block, score: +score }));
 
   return { entries, id };
