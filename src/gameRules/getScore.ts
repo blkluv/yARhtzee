@@ -1,4 +1,4 @@
-import { Category, DiceValue } from "./types";
+import type { Category, DiceValue } from "./types";
 
 export const getScore = (category: Category, set: DiceValue[]) => {
   switch (category) {

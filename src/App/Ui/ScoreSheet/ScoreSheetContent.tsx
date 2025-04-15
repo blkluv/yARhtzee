@@ -4,6 +4,7 @@ import {
   categories,
   Category,
   DiceValue,
+  getScoreSheetScore,
   ScoreSheet,
 } from "../../../gameRules/types";
 import { getScore } from "../../../gameRules/getScore";
@@ -72,11 +73,7 @@ export const ScoreSheetContent = ({
         <td />
         <Td style={{ border: "1px solid #ddd" }}>
           <div style={{ marginLeft: "auto" }}>
-            {categories.reduce((s, c) => {
-              const roll = scoreSheet[c];
-
-              return s + (roll ? getScore(c, roll) : 0);
-            }, 0)}
+            {getScoreSheetScore(scoreSheet)}
           </div>
         </Td>
       </tr>
