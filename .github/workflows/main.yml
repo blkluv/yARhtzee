@@ -21,8 +21,16 @@ jobs:
         env:
           VITE_XR8_API_KEY: ${{ secrets.VITE_XR8_API_KEY }}
       - run: cp doc/* ./dist/
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+
       - uses: actions/deploy-pages@v4
         if: success() && github.ref == 'refs/heads/master'
+
+      - run: bunx wrangler deploy
+        if: success() && github.ref == 'refs/heads/master'
+        working-directory: src/api-leaderboard
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

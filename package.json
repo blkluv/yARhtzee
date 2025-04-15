@@ -9,6 +9,7 @@
     "@react-three/drei": "10.0.6",
     "@react-three/fiber": "9.1.2",
     "cannon-es": "0.20.0",
+    "parse-multipart-data": "1.5.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-touch-visualizer": "0.0.1",
@@ -16,6 +17,7 @@
     "tunnel-rat": "0.1.2"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "4.20250415.0",
     "@types/bun": "1.2.9",
     "@types/loadable__component": "5.13.9",
     "@types/react": "19.1.2",
@@ -24,7 +26,8 @@
     "@types/webxr": "0.5.21",
     "prettier": "2.8.8",
     "typescript": "5.8.3",
-    "vite": "6.2.6"
+    "vite": "6.2.6",
+    "wrangler": "4.11.0"
   },
   "scripts": {
     "type": "tsc --noEmit",
