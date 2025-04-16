@@ -12,15 +12,15 @@
 
 A pretty cool yahtzee game in augmented reality.
 
-[yAR-htzee](https://platane.github.io/yAR-htzee)
+[🎲 yAR-htzee](https://platane.github.io/yAR-htzee)
+
+[🥇 leaderboard](https://github.com/Platane/yAR-htzee/issues/6)
 
 # Background
 
-This game uses [8thwall](https://www.8thwall.com/products-web#world-tracking) SDK to achieve world tracking.
+This game uses [8thwall](https://www.8thwall.com/products-web#world-tracking) or native [WebXR](https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API) to achieve world tracking.
 
 The dice are rendered with [three.js](https://github.com/mrdoob/three.js) using [react-three-fiber](https://github.com/pmndrs/react-three-fiber) and the physical world is simulated with [cannon.js](https://github.com/schteppe/cannon.js).
-
-If the device does not support AR or 8thwall can't be loaded, the game runs without Augmented Reality.
 
 # Install
 
