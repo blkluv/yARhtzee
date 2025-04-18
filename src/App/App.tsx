@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as THREE from "three";
 import { GithubLogo } from "./Ui/GithubLogo";
-import { Canvas, extend, events, createRoot } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { XR8Controls } from "../XR8Canvas/XR8Controls";
 import { loadXR8, xr8Hosted } from "../XR8Canvas/getXR8";
 import { Game } from "./Game";
@@ -9,8 +9,7 @@ import { Dice } from "./Scene/Dice";
 import tunnel from "tunnel-rat";
 import { Ground } from "./Scene/Ground";
 import { WebXRControls } from "../WebXRCanvas/WebXRControls";
-import { createPortal } from "react-dom";
-import { XR8 } from "../XR8Canvas/XR8";
+import type { XR8 } from "../XR8Canvas/XR8";
 import { Environment } from "./Scene/Environment";
 import { TrackingHint } from "./Ui/Hints/TrackingHint";
 import { useProgress } from "@react-three/drei";
@@ -122,15 +121,7 @@ export const App = () => {
         gl={renderer} // the renderer is created before so we can pass a custom canvas, instead of letting three.js create one. That way the canvas is a direct child of body. Which is supposed to be required for 8thWall (?)
         camera={{ position: new THREE.Vector3(0, 6, 6) }}
         shadows
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          touchAction: "none",
-          opacity: readyForRender ? 1 : 0,
-        }}
+        style={{ visibility: "hidden" }} // rtf still creates and attach an empty canvas. Let's make it invisible
       >
         {state.type === "xr8" && state.xr8 && (
           <XR8Controls
