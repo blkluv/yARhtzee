@@ -1,69 +1,89 @@
 import * as React from "react";
 import { Dice } from "./Dice";
 
-export const PageRules = () => (
-  <div style={styles.container}>
-    {/* Header with viral-worthy title */}
-    <div style={styles.header}>
-      <h1 style={styles.title}>🎲 DICE OR DARE 🎲</h1>
-      <div style={styles.subtitle}>#1 TRENDING AR GAME RN 🔥</div>
-    </div>
+export const PageRules = () => {
+  // Add this function to handle AR launch
+  const startARExperience = () => {
+    if (window.XR8) {
+      console.log("Launching AR experience...");
+      // Add your 8th Wall initialization code here
+      // Example:
+      // XR8.addCameraPipelineModules([...]);
+      // XR8.run({ canvas: document.getElementById('arCanvas') });
+    } else {
+      console.log("AR not ready yet");
+      // Fallback for when scripts are still loading
+      setTimeout(startARExperience, 500);
+    }
+  };
 
-    {/* Dice display with extra ✨spice✨ */}
-    <div style={styles.diceRow}>
-      <Dice value={1} style={styles.dice} />
-      <Dice value={2} style={styles.dice} />
-      <Dice value={3} style={styles.dice} />
-      <Dice value={4} style={styles.dice} />
-      <div style={{ position: "relative" }}>
-        <Dice value={6} style={styles.dice} />
-        <div style={styles.fireEmoji}>🔥</div>
-      </div>
-    </div>
-
-    {/* Main card with that TikTok aesthetic */}
-    <div style={styles.card}>
-      <p style={styles.tagline}>
-        <span style={styles.emoji}>✨</span> The most LIT{" "}
-        <a href="https://en.wikipedia.org/wiki/Yahtzee" style={styles.link}>
-          dice game
-        </a>{" "}
-        in AR rn 💯 <span style={styles.emoji}>✨</span>
-      </p>
-
-      {/* Rules section - short n sweet */}
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>📜 HOW TO PLAY (it's easy fr)</h2>
-        <ul style={styles.rulesList}>
-          <li style={styles.ruleItem}>🎯 Roll 5 dice = make combos</li>
-          <li style={styles.ruleItem}>🔄 Get 2 re-rolls (no cap!)</li>
-          <li style={styles.ruleItem}>🏆 Pick your best combo (big brain time)</li>
-          <li style={styles.ruleItem}>⏱️ 13 rounds = flex your high score</li>
-          <li style={styles.ruleItem}>🔥 Beat your friends = ultimate flex</li>
-        </ul>
+  return (
+    <div style={styles.container}>
+      {/* Header with viral-worthy title */}
+      <div style={styles.header}>
+        <h1 style={styles.title}>🎲 DICE OR DARE 🎲</h1>
+        <div style={styles.subtitle}>#1 TRENDING AR GAME RN 🔥</div>
       </div>
 
-      {/* Fixed mobile button - no more disappearing! */}
-      <button style={styles.startButton}>
-        🚀 START PLAYING 🎲
-      </button>
+      {/* Dice display with extra ✨spice✨ */}
+      <div style={styles.diceRow}>
+        <Dice value={1} style={styles.dice} />
+        <Dice value={2} style={styles.dice} />
+        <Dice value={3} style={styles.dice} />
+        <Dice value={4} style={styles.dice} />
+        <div style={{ position: "relative" }}>
+          <Dice value={6} style={styles.dice} />
+          <div style={styles.fireEmoji}>🔥</div>
+        </div>
+      </div>
 
-      <div style={styles.badge}>NEW</div>
-      <div style={styles.viralBadge}>VIRAL ON TT</div>
-    </div>
+      {/* Main card with that TikTok aesthetic */}
+      <div style={styles.card}>
+        <p style={styles.tagline}>
+          <span style={styles.emoji}>✨</span> The most LIT{" "}
+          <a href="https://en.wikipedia.org/wiki/Yahtzee" style={styles.link}>
+            dice game
+          </a>{" "}
+          in AR rn 💯 <span style={styles.emoji}>✨</span>
+        </p>
 
-    {/* Footer with AR call-to-action */}
-    <div style={styles.footer}>
-      <p style={styles.footerText}>Shake your phone like it's a Polaroid 📸</p>
-      <p style={styles.footerText}>AR mode = next level 🤯</p>
-      <div style={styles.socialIcons}>
-        <span style={styles.icon}>📱</span>
-        <span style={styles.icon}>📸</span>
-        <span style={styles.icon}>🎥</span>
+        {/* Rules section - short n sweet */}
+        <div style={styles.section}>
+          <h2 style={styles.sectionTitle}>📜 HOW TO PLAY (it's easy fr)</h2>
+          <ul style={styles.rulesList}>
+            <li style={styles.ruleItem}>🎯 Roll 5 dice = make combos</li>
+            <li style={styles.ruleItem}>🔄 Get 2 re-rolls (no cap!)</li>
+            <li style={styles.ruleItem}>🏆 Pick your best combo (big brain time)</li>
+            <li style={styles.ruleItem}>⏱️ 13 rounds = flex your high score</li>
+            <li style={styles.ruleItem}>🔥 Beat your friends = ultimate flex</li>
+          </ul>
+        </div>
+
+        {/* Fixed mobile button - NOW WITH WORKING AR! */}
+        <button 
+          style={styles.startButton}
+          onClick={startARExperience} // This connects the function
+        >
+          🚀 START AR EXPERIENCE 🎲
+        </button>
+
+        <div style={styles.badge}>NEW</div>
+        <div style={styles.viralBadge}>VIRAL ON TT</div>
+      </div>
+
+      {/* Footer with AR call-to-action */}
+      <div style={styles.footer}>
+        <p style={styles.footerText}>Shake your phone like it's a Polaroid 📸</p>
+        <p style={styles.footerText}>AR mode = next level 🤯</p>
+        <div style={styles.socialIcons}>
+          <span style={styles.icon}>📱</span>
+          <span style={styles.icon}>📸</span>
+          <span style={styles.icon}>🎥</span>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const styles = {
   container: {
